@@ -1,7 +1,15 @@
 import React from 'react';
-import { MapPin, Shield, Key, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MapPin, Shield, Key, LogOut, Smartphone, Navigation } from 'lucide-react';
 
-export function Navbar({ session, isSpoofing, spoofedCoords, onOpenKeyGen, onLogout }) {
+export function Navbar({ 
+  session, 
+  currentTab, 
+  onSelectTab, 
+  isSpoofing, 
+  spoofedCoords, 
+  onOpenKeyGen, 
+  onLogout 
+}) {
   const isOwner = session?.role === 'OWNER';
 
   return (
@@ -19,7 +27,7 @@ export function Navbar({ session, isSpoofing, spoofedCoords, onOpenKeyGen, onLog
                 LOC<span className="text-[#1abc9c]">SPOOF</span>
               </span>
               <span className="bg-[#2c3e50] text-white text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-widest">
-                GUI v2.0
+                v2.0
               </span>
             </div>
             <p className="text-[11px] font-semibold text-[#7f8c8d] uppercase tracking-wider hidden sm:block">
@@ -28,27 +36,37 @@ export function Navbar({ session, isSpoofing, spoofedCoords, onOpenKeyGen, onLog
           </div>
         </div>
 
-        {/* Live Status Indicators */}
-        <div className="hidden md:flex items-center gap-3">
-          <div className={`flex items-center gap-2 px-3 py-1.5 border-2 border-[#2c3e50] font-bold text-xs uppercase ${
-            isSpoofing ? 'bg-[#2ecc71] text-white shadow-flat-sm' : 'bg-[#ecf0f1] text-[#7f8c8d]'
-          }`}>
-            <span className={`w-2.5 h-2.5 rounded-full ${isSpoofing ? 'bg-white animate-pulse' : 'bg-[#95a5a6]'}`}></span>
-            {isSpoofing ? 'SPOOF ACTIVE' : 'STANDBY'}
-          </div>
-
-          {isSpoofing && spoofedCoords && (
-            <div className="bg-[#34495e] text-white text-xs font-mono px-3 py-1.5 border-2 border-[#2c3e50] flex items-center gap-2">
-              <span className="text-[#1abc9c]">LAT:</span> {spoofedCoords.lat.toFixed(5)}
-              <span className="text-[#3498db] ml-1">LON:</span> {spoofedCoords.lon.toFixed(5)}
-            </div>
-          )}
+        {/* Center Nav: Tab Switcher (APK Guide vs Map Controller) */}
+        <div className="flex items-center border-2 border-[#2c3e50] bg-[#ecf0f1] p-0.5">
+          <button
+            onClick={() => onSelectTab('guide')}
+            className={`px-3 py-1.5 text-xs font-extrabold uppercase flex items-center gap-1.5 transition-colors ${
+              currentTab === 'guide' 
+                ? 'bg-[#1abc9c] text-white shadow-flat-sm' 
+                : 'text-[#2c3e50] hover:bg-white'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Download APK &amp; Panduan</span>
+          </button>
+          
+          <button
+            onClick={() => onSelectTab('map')}
+            className={`px-3 py-1.5 text-xs font-extrabold uppercase flex items-center gap-1.5 transition-colors ${
+              currentTab === 'map' 
+                ? 'bg-[#3498db] text-white shadow-flat-sm' 
+                : 'text-[#2c3e50] hover:bg-white'
+            }`}
+          >
+            <Navigation className="w-3.5 h-3.5" />
+            <span>Peta Interaktif</span>
+          </button>
         </div>
 
         {/* User Badge & Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Key Role Badge */}
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 border-2 border-[#2c3e50] text-xs font-extrabold uppercase ${
+          <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 border-2 border-[#2c3e50] text-xs font-extrabold uppercase ${
             isOwner 
               ? 'bg-[#f1c40f] text-[#2c3e50] shadow-flat-sm' 
               : 'bg-[#3498db] text-white shadow-flat-sm'

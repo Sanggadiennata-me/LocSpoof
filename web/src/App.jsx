@@ -5,6 +5,7 @@ import { ControlPanel } from './components/ControlPanel';
 import { DeviceModeSelector } from './components/DeviceModeSelector';
 import { KeyAuthModal } from './components/KeyAuthModal';
 import { KeyGeneratorModal } from './components/KeyGeneratorModal';
+import { ApkGuideView } from './components/ApkGuideView';
 import { reverseGeocode } from './services/universalSpoofer';
 import { verifyLicenseKey } from './services/cryptoKey';
 import { isNativeAndroidApp, applyNativeMockLocation, stopNativeMockLocation } from './services/nativeBridge';
@@ -14,6 +15,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showKeyGenModal, setShowKeyGenModal] = useState(false);
+  const [currentTab, setCurrentTab] = useState('guide'); // 'guide' | 'map'
 
   // Coordinate & Spoofing State
   const [targetCoords, setTargetCoords] = useState({ lat: -6.175392, lon: 106.827153 });
@@ -154,6 +156,8 @@ export default function App() {
       {/* Top Navbar */}
       <Navbar
         session={session}
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
         isSpoofing={isSpoofing}
         spoofedCoords={spoofedCoords}
         onOpenKeyGen={() => setShowKeyGenModal(true)}
@@ -163,61 +167,70 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
-        {/* Top Info Banner */}
-        <div className="bg-[#ffffff] border-2 border-[#2c3e50] shadow-flat p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className={`w-3.5 h-3.5 border-2 border-[#2c3e50] ${isSpoofing ? 'bg-[#2ecc71] animate-ping' : 'bg-[#95a5a6]'}`} />
-            <div>
-              <span className="font-extrabold text-xs uppercase tracking-wider text-[#2c3e50]">
-                {isSpoofing ? 'STATUS: LOKASI AKTIF DI-SPOOF' : 'STATUS: SIAP MENGUBAH LOKASI'}
-              </span>
-              <p className="text-xs text-[#7f8c8d] font-semibold mt-0.5">
-                {isSpoofing
-                  ? `Device kini terkonfigurasi pada koordinat: ${spoofedCoords?.lat.toFixed(6)}, ${spoofedCoords?.lon.toFixed(6)}`
-                  : 'Klik di mana saja pada peta atau cari tempat untuk langsung memilih target lokasi baru.'}
-              </p>
+        {currentTab === 'guide' ? (
+          <ApkGuideView onSwitchToMap={() => setCurrentTab('map')} />
+        ) : (
+          <>
+            {/* Top Info Banner */}
+            <div className="bg-[#ffffff] border-2 border-[#2c3e50] shadow-flat p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-3.5 h-3.5 border-2 border-[#2c3e50] ${isSpoofing ? 'bg-[#2ecc71] animate-ping' : 'bg-[#95a5a6]'}`} />
+                <div>
+                  <span className="font-extrabold text-xs uppercase tracking-wider text-[#2c3e50]">
+                    {isSpoofing ? 'STATUS: LOKASI AKTIF DI-SPOOF' : 'STATUS: SIAP MENGUBAH LOKASI'}
+                  </span>
+                  <p className="text-xs text-[#7f8c8d] font-semibold mt-0.5">
+                    {isSpoofing
+                      ? `Device kini terkonfigurasi pada koordinat: ${spoofedCoords?.lat.toFixed(6)}, ${spoofedCoords?.lon.toFixed(6)}`
+                      : 'Klik di mana saja pada peta atau cari tempat untuk langsung memilih target lokasi baru.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentTab('guide')}
+                  className="flat-btn-primary !py-1 !px-2.5 text-xs uppercase font-extrabold"
+                >
+                  Download APK
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-extrabold uppercase px-2 py-1 bg-[#ecf0f1] border border-[#2c3e50] text-[#2c3e50]">
-              Mode: Serverless Web
-            </span>
-          </div>
-        </div>
+            {/* 2-Column Responsive Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Column: Interactive Map (7 Cols on desktop) */}
+              <div className="lg:col-span-7 space-y-6">
+                <MapViewer
+                  targetCoords={targetCoords}
+                  isSpoofing={isSpoofing}
+                  onLocationSelect={handleLocationSelect}
+                />
 
-        {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Left Column: Interactive Map (7 Cols on desktop) */}
-          <div className="lg:col-span-7 space-y-6">
-            <MapViewer
-              targetCoords={targetCoords}
-              isSpoofing={isSpoofing}
-              onLocationSelect={handleLocationSelect}
-            />
+                {/* Device Integration Component */}
+                <DeviceModeSelector
+                  targetCoords={targetCoords}
+                  isSpoofing={isSpoofing}
+                />
+              </div>
 
-            {/* Device Integration Component */}
-            <DeviceModeSelector
-              targetCoords={targetCoords}
-              isSpoofing={isSpoofing}
-            />
-          </div>
+              {/* Right Column: Control Panel & Presets (5 Cols on desktop) */}
+              <div className="lg:col-span-5 space-y-6">
+                <ControlPanel
+                  targetCoords={targetCoords}
+                  addressInfo={addressInfo}
+                  isSpoofing={isSpoofing}
+                  onTeleport={handleTeleport}
+                  onReset={handleReset}
+                  onSelectPreset={handleSelectPreset}
+                  onManualCoordinateChange={(lat, lon) => setTargetCoords({ lat, lon })}
+                />
+              </div>
 
-          {/* Right Column: Control Panel & Presets (5 Cols on desktop) */}
-          <div className="lg:col-span-5 space-y-6">
-            <ControlPanel
-              targetCoords={targetCoords}
-              addressInfo={addressInfo}
-              isSpoofing={isSpoofing}
-              onTeleport={handleTeleport}
-              onReset={handleReset}
-              onSelectPreset={handleSelectPreset}
-              onManualCoordinateChange={(lat, lon) => setTargetCoords({ lat, lon })}
-            />
-          </div>
-
-        </div>
+            </div>
+          </>
+        )}
 
       </main>
 
