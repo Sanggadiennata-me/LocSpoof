@@ -1,0 +1,10 @@
+{
+  "name": "locspoof",
+  "version": "2.0.0",
+  "private": true,
+  "description": "LocSpoof Web GUI - Universal GPS Spoofer (Flat Design)",
+  "scripts": {
+    "build": "cd web && npm install && npm run build",
+    "dev": "cd web && npm run dev"
+  }
+}
