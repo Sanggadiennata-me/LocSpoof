@@ -7,6 +7,7 @@ import { KeyAuthModal } from './components/KeyAuthModal';
 import { KeyGeneratorModal } from './components/KeyGeneratorModal';
 import { reverseGeocode } from './services/universalSpoofer';
 import { verifyLicenseKey } from './services/cryptoKey';
+import { isNativeAndroidApp, applyNativeMockLocation, stopNativeMockLocation } from './services/nativeBridge';
 
 export default function App() {
   // Auth Session State
@@ -96,6 +97,16 @@ export default function App() {
     setIsSpoofing(true);
     setSpoofedCoords(targetCoords);
 
+    // 1. If running inside native LocSpoof APK on Android:
+    if (isNativeAndroidApp()) {
+      const nativeRes = applyNativeMockLocation(targetCoords.lat, targetCoords.lon);
+      if (nativeRes.success) {
+        showToast(`📱 Native APK: Lokasi seluruh HP berhasil diubah ke ${targetCoords.lat.toFixed(5)}, ${targetCoords.lon.toFixed(5)}!`);
+        return;
+      }
+    }
+
+    // 2. If running on laptop connected to phone via ADB / Wireless ADB:
     try {
       const res = await fetch('/api/spoof', {
         method: 'POST',
@@ -122,6 +133,11 @@ export default function App() {
   const handleReset = async () => {
     setIsSpoofing(false);
     setSpoofedCoords(null);
+
+    // If running in APK
+    if (isNativeAndroidApp()) {
+      stopNativeMockLocation();
+    }
 
     try {
       await fetch('/api/reset', { method: 'POST' });
