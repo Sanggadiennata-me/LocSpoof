@@ -92,15 +92,43 @@ export default function App() {
     showToast(`Dipusatkan ke: ${preset.name}`);
   };
 
-  const handleTeleport = () => {
+  const handleTeleport = async () => {
     setIsSpoofing(true);
     setSpoofedCoords(targetCoords);
-    showToast(`🚀 Berhasil teleport ke: ${targetCoords.lat.toFixed(5)}, ${targetCoords.lon.toFixed(5)}!`);
+
+    try {
+      const res = await fetch('/api/spoof', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: targetCoords.lat, lon: targetCoords.lon })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          showToast(`🚀 HP Fisik Terdeteksi: ${data.message || 'Lokasi Android berhasil diubah!'}`);
+          return;
+        } else if (data.error || data.message) {
+          showToast(`🎯 Peta aktif: ${targetCoords.lat.toFixed(4)}, ${targetCoords.lon.toFixed(4)}. Sambungkan HP via USB/Wi-Fi untuk injeksi level OS.`);
+          return;
+        }
+      }
+    } catch {
+      // Standalone static web / Vercel mode
+    }
+
+    showToast(`🚀 Target terkunci: ${targetCoords.lat.toFixed(5)}, ${targetCoords.lon.toFixed(5)}!`);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setIsSpoofing(false);
     setSpoofedCoords(null);
+
+    try {
+      await fetch('/api/reset', { method: 'POST' });
+    } catch {
+      // Standalone static web
+    }
+
     showToast("Lokasi telah di-reset ke kondisi normal.");
   };
 
