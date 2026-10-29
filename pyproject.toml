@@ -32,7 +32,7 @@ dev = [
 ]
 
 [project.scripts]
-locspoof = "locspoof.cli.main:run_app"
+locspoof = "locspoof.gui.server:run_gui"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
