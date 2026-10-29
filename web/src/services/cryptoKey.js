@@ -113,11 +113,4 @@ export function verifyLicenseKey(rawKey) {
 
 // Master Key for Owner (r3x)
 // Created with Owner Role, Lifetime Access, Unlimited Feats
-export const MASTER_OWNER_KEY = (() => {
-  return generateLicenseKey({
-    username: "r3x-founder-master",
-    role: "OWNER",
-    durationDays: null, // Lifetime
-    features: ["*"]
-  });
-})();
+export const MASTER_OWNER_KEY = "LOCSPOOF-OWNER-eyJzdWIiOiJyM3gtZm91bmRlci1tYXN0ZXIiLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3OTMyNjUyODAsImV4cCI6MCwiZmVhdCI6WyIqIl19-bb998ab22ac851fcaffff8deacff9918";
